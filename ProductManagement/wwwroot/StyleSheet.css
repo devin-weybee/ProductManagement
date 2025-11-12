@@ -1,0 +1,419 @@
+﻿/* ===============================
+   GLOBAL STYLES
+================================= */
+body {
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f9fafb;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* ===============================
+   HEADINGS
+================================= */
+h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* ===============================
+   BUTTONS
+================================= */
+button,
+.btn {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: #6c757d;
+    color: white;
+}
+
+    .btn-primary:hover {
+        background-color: #6c757d;
+    }
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+    .btn-danger:hover {
+        background-color: #bb2d3b;
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+    .btn-secondary:hover {
+        background-color: #565e64;
+    }
+
+/* ===============================
+   LINKS
+================================= */
+a {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 14px;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+/* ===============================
+   FORM STYLES
+================================= */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+/*    display: flex;*/
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+    .form-group label {
+        flex: 0 0 35%;
+        font-weight: 600;
+        color: #444;
+        text-align: right;
+        display:inline-flex;
+        width:35%;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+        }
+
+        .form-group input:disabled {
+            background-color: #f1f1f1;
+        }
+
+span.field-validation-error {
+    display: block;
+    margin-left: 35%;
+    font-size: 13px;
+    color: #dc3545;
+    margin-top: 3px;
+}
+
+/* ===============================
+   TABLE STYLES
+================================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    margin: 20px auto;
+    max-width: 1200px;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+thead tr {
+    background-color: #f3f4f6;
+}
+
+th {
+    font-weight: 600;
+    color: #333;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Validation Error Styles */
+.text-danger,
+.field-validation-error {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 4px;
+    display: block;
+}
+
+
+/* ===============================
+   CONTAINER STYLES
+================================= */
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+}
+
+.form-box {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    max-width: 90%;
+}
+
+.history-heading {
+    display: flex;
+    justify-content: center;
+}
+
+/* ===============================
+   SEARCH FORM & TOP CONTROLS
+================================= */
+.search-form {
+    margin: 0 auto 25px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .search-form input[type="text"] {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .search-form button {
+        margin-left: 10px;
+    }
+
+.top-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    max-width: 1200px;
+    margin: 10px auto 25px;
+}
+
+/* ===============================
+   UTILITY CLASSES
+================================= */
+.text-center {
+    text-align: center;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+/* ===============================
+   RESPONSIVE DESIGN
+================================= */
+@media (max-width: 700px) {
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+        .form-group label {
+            text-align: left;
+            margin-bottom: 5px;
+        }
+
+    span.field-validation-error {
+        margin-left: 0;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th,
+    td {
+        padding: 8px;
+    }
+
+    .form-box {
+        width: 90%;
+        padding: 25px;
+    }
+
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .search-form input[type="text"] {
+            margin-right: 0;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+    .top-controls {
+        justify-content: center;
+    }
+}
+
+/* ===============================
+   LOGIN & REGISTER FORM STYLES
+================================= */
+
+/* Page container for auth forms */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+/* Card box for login/register forms */
+.auth-box {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 40px 35px;
+    width: 400px;
+    max-width: 90%;
+    transition: transform 0.3s ease;
+}
+
+    .auth-box:hover {
+        transform: translateY(-3px);
+    }
+
+    /* Title heading */
+    .auth-box h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+    }
+
+    /* Input groups */
+    .auth-box .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .auth-box label {
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 5px;
+    }
+
+    .auth-box input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+        .auth-box input:focus {
+            border-color: #007bff;
+        }
+
+/* Buttons */
+.auth-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+    .auth-btn.register {
+        background-color: #28a745;
+    }
+
+        .auth-btn.register:hover {
+            background-color: #218838;
+        }
+
+    .auth-btn.login {
+        background-color: #007bff;
+    }
+
+        .auth-btn.login:hover {
+            background-color: #0069d9;
+        }
+
+/* Links under form */
+.auth-box p {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.auth-box a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .auth-box a:hover {
+        text-decoration: underline;
+    }
+
+/* Responsive behavior */
+@media (max-width: 600px) {
+    .auth-box {
+        width: 90%;
+        padding: 25px 20px;
+    }
+}

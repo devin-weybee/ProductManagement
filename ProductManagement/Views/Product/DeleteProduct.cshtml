@@ -1,0 +1,37 @@
+﻿@model ProductResponse
+
+@{
+    ViewBag.Title = "Delete Product";
+}
+
+<div class="form-container">
+    <div class="form-box text-center">
+        <a asp-controller="Product" asp-action="Index">← Back to Product List</a>
+
+        <h2>Delete Product</h2>
+        <h4 style="color:#555;">Are you sure you want to delete this product?</h4>
+
+        <form asp-controller="Product" asp-action="DeleteProductConfirmed"
+              asp-route-productId="@Model.ProductID" method="post">
+
+            <div class="form-group">
+                <label asp-for="ProductID"></label>
+                <input asp-for="ProductID" value="@Model.ProductID" disabled />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ProductName"></label>
+                <input asp-for="ProductName" value="@Model.ProductName" disabled />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ProductRate"></label>
+                <input asp-for="ProductRate" value="@Model.ProductRate" disabled />
+            </div>
+
+            <button type="submit" class="btn btn-danger mt-10">Delete Product</button>
+
+            <a asp-controller="Product" asp-action="Index" class="mt-10">Cancel</a>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,143 @@
+﻿@model ProductManagement.Models.InvoiceViewModel
+@{
+    ViewBag.Title = "Invoice Generation";
+}
+
+<h2 style="text-align:center; margin-bottom:25px;">Generate Invoice</h2>
+
+<div class="form-container">
+    <div class="form-box">
+
+        <!-- Invoice Form -->
+        <form asp-controller="Invoice" asp-action="AddInvoice" method="post" id="invoiceForm">
+            <!-- Select Customer -->
+            <div class="form-group">
+                <label for="CustomerID">Select Customer</label>
+                <select asp-for="CustomerID" asp-items="Model.customerResponse" class="form-control" id="customerSelect" required>
+                    <option value="">-- Select Customer --</option>
+                </select>
+            </div>
+
+            <!-- Select Product -->
+            <div class="form-group">
+                <label for="ProductID">Select Product</label>
+                <select asp-for="ProductID" asp-items="Model.assignedProductResponse" class="form-control" id="productSelect" required>
+                    <option value="">-- Select Product --</option>
+                </select>
+            </div>
+
+            <!-- Price (auto filled) -->
+            <div class="form-group">
+                <label for="Price">Latest Price (₹)</label>
+                <input asp-for="Price" type="number" id="priceInput" class="form-control" readonly />
+            </div>
+
+            <!-- Quantity -->
+            <div class="form-group">
+                <label for="Quantity">Quantity</label>
+                <input asp-for="Quantity" type="number" id="quantityInput" min="1" value="1" class="form-control" required />
+            </div>
+
+            <!-- Total -->
+            <div class="form-group">
+                <label>Total (₹)</label>
+                <input type="number" id="totalInput" class="form-control" readonly />
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary mt-10" style="width:100%;">Generate Invoice</button>
+        </form>
+    </div>
+</div>
+
+<!-- ========== Invoice Table Section ========== -->
+@if (Model != null && ViewBag.Invoices != null)
+{
+    <h2 style="text-align:center; margin-top:40px;">Generated Invoices</h2>
+
+    <table style="width:100%; margin:auto; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,0.1); font-size:15px;">
+        <thead style="background-color:#f3f4f6;">
+            <tr>
+                <th style="padding:10px;">Customer</th>
+                <th style="padding:10px;">Product</th>
+                <th style="padding:10px;">Price (₹)</th>
+                <th style="padding:10px;">Quantity</th>
+                <th style="padding:10px;">Total (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                double grandTotal = 0;
+            }
+            @foreach (var invoice in ViewBag.Invoices)
+            {
+                var total = (Convert.ToDouble(invoice.Price) * Convert.ToInt32(invoice.Quantity));
+                grandTotal += total;
+
+                <tr style="border-bottom:1px solid #e5e7eb;">
+                    <td style="padding:10px;">@invoice.CustomerName</td>
+                    <td style="padding:10px;">@invoice.ProductName</td>
+                    <td style="padding:10px;">@invoice.Price</td>
+                    <td style="padding:10px;">@invoice.Quantity</td>
+                    <td style="padding:10px; font-weight:600;">@total.ToString("0.00")</td>
+                </tr>
+            }
+
+            <!-- Grand Total Row -->
+            <tr style="background-color:#f3f4f6; font-weight:bold;">
+                <td colspan="4" style="text-align:right; padding:10px;">Grand Total:</td>
+                <td style="padding:10px; font-weight:700;">₹ @grandTotal.ToString("0.00")</td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@section script {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // === Fetch Assigned Products ===
+        $('#customerSelect').change(function () {
+            const customerId = $(this).val();
+            const productSelect = $('#productSelect');
+
+            productSelect.empty().append('<option>Loading...</option>');
+
+            if (customerId) {
+                $.getJSON('/GetAssignedProduct', { customerId: customerId }, function (data) {
+                    productSelect.empty().append('<option value="">-- Select Product --</option>');
+                    $.each(data, function (i, item) {
+                        productSelect.append(`<option value="${item.value}">${item.text}</option>`);
+                    });
+                });
+            } else {
+                productSelect.empty().append('<option value="">-- Select Customer First --</option>');
+            }
+        });
+
+        // === Fetch Product Price ===
+        $('#productSelect').change(function () {
+            const productId = $(this).val();
+            if (productId) {
+                $.getJSON('/GetPriceOfProduct', { productId: productId }, function (price) {
+                    $('#priceInput').val(price);
+                    updateTotal();
+                });
+            } else {
+                $('#priceInput').val('');
+                $('#totalInput').val('');
+            }
+        });
+
+        // === Calculate Total dynamically ===
+        $('#quantityInput').on('input', function () {
+            updateTotal();
+        });
+
+        function updateTotal() {
+            const price = parseFloat($('#priceInput').val()) || 0;
+            const qty = parseInt($('#quantityInput').val()) || 0;
+            const total = price * qty;
+            $('#totalInput').val(total.toFixed(2));
+        }
+    </script>
+}

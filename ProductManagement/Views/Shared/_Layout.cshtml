@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link href="~/StyleSheet.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="container">
+        <div style="background-color:#6c757d; color:white; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; margin:12px 20px; border-radius:8px;">
+
+            <h2 style="margin:0; font-size:20px; color:white">Product Management</h2>
+
+            <div style="display:flex; gap:25px; align-items:center;">
+                <a asp-controller="Home" asp-action="Index"
+                   style="color:white; text-decoration:none; font-weight:500;">Customer</a>
+                <a asp-controller="Product" asp-action="Index"
+                   style="color:white; text-decoration:none; font-weight:500;">Product</a>
+                <a asp-controller="AssignProduct" asp-action="Index"
+                   style="color:white; text-decoration:none; font-weight:500;">Assign Products</a>
+                <a asp-controller="Invoice" asp-action="Index"
+                   style="color:white; text-decoration:none; font-weight:500;">Invoice</a>
+
+                @{
+                    var fullName = User.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value;
+                }
+
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <span style="font-weight:500;">Hello, @(fullName)!</span>
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                            <button type="submit"
+                                    style="background-color:#dc3545; border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer;">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <a asp-controller="Account" asp-action="Login"
+                           style="color:white; text-decoration:none; font-weight:500;">Login</a>
+                        <a asp-controller="Account" asp-action="Register"
+                           style="color:white; text-decoration:none; font-weight:500;">Register</a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="page-content">
+            @RenderBody()
+        </div>
+    </div>
+
+    @RenderSection("script", required: false)
+</body>
+</html>

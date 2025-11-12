@@ -1,0 +1,57 @@
+﻿@model IEnumerable<CustomerResponse>
+
+@{
+    ViewBag.Title = "Customer List";
+}
+
+<h2>Customer List</h2>
+
+<form asp-action="Index" method="get" class="search-form">
+    <div>
+        <input type="text" name="searchTerm" value="@ViewBag.SearchTerm"
+               placeholder="Search by customer name..." />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+    <a asp-controller="Home" asp-action="AddCustomer" class="btn btn-success">
+        + Add Customer
+    </a>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:10%;">Sr. No</th>
+            <th style="width:30%;">Name</th>
+            <th style="width:40%;">Email</th>
+            <th style="width:20%; text-align:center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int i = 1;
+            @foreach (var customer in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@customer.CustomerName</td>
+                    <td>@customer.CustomerEmail</td>
+                    <td style="text-align:center; font-weight:700">
+                        <a asp-controller="Home" asp-action="EditCustomer"
+                           asp-route-customerId="@customer.CustomerID">Edit</a> |
+                        <a asp-controller="Home" asp-action="DeleteCustomer"
+                           asp-route-customerId="@customer.CustomerID"
+                           style="color:#dc3545;">Delete</a>
+                    </td>
+                </tr>
+                i++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center" style="color:#888;">No customers found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

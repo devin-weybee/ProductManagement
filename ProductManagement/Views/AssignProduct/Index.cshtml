@@ -1,0 +1,45 @@
+﻿@model IEnumerable<AssignedProductResponse>
+@{
+    ViewBag.Title = "Assigned Products To Customer";
+}
+
+<h2>Assigned Products To Customer</h2>
+<div class="top-controls">
+    <a asp-controller="AssignProduct" asp-action="AssignProductToCustomer" class="btn btn-success">+ Assign Product</a>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Sr. No</th>
+            <th>Customer Name</th>
+            <th>Product Name</th>
+            <th style="text-align:center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int i = 1;
+            @foreach (var assignment in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@assignment.CustomerName</td>
+                    <td>@assignment.ProductName</td>
+                    <td style="text-align:center; font-weight:700">
+                        <a asp-controller="AssignProduct" asp-action="DeleteAssignedProduct"
+                           asp-route-assignedProductId="@assignment.AssignedProductID"
+                           style="color:#dc3545;">Unassign</a>
+                    </td>
+                </tr>
+                i++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" style="text-align:center; color:#888;">No assigned products found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,61 @@
+﻿@model ProductResponse
+@{
+    ViewBag.Title = "Rate History for " + Model.ProductName;
+}
+
+<div class="rate-container">
+    <div class="rate-box">
+        <h2>Rate History</h2>
+        <h3 class="rate-header history-heading">@Model.ProductName</h3>
+
+        <p style="text-align:center; color:#666;">
+            <strong>Product ID:</strong> @Model.ProductID
+        </p>
+
+        <p style="text-align:center;">
+            <span style="color:#007bff; font-weight:600;">Latest Price:</span>
+            <span style="font-size:18px; color:green; font-weight:700;">₹ @Model.ProductRate.ToString("0.00")</span>
+        </p>
+
+        <hr />
+
+        <h4 class="history-heading">Price History</h4>
+
+        @if (Model.ProductRates != null && Model.ProductRates.Any())
+        {
+            <table class="rate-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Price (₹)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var count = 1;
+                        var totalRates = Model.ProductRates.Count;
+                    }
+                    @foreach (var rate in Model.ProductRates)
+                    {
+                        bool isLatest = rate == Model.ProductRates.Last();
+                        <tr class="@(isLatest ? "rate-latest" : "rate-old")">
+                            <td>@count</td>
+                            <td>₹ @rate.ToString("0.00")</td>
+                            <td>@(isLatest ? "Latest" : "Old")</td>
+                        </tr>
+                        count++;
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p style="text-align:center; color:#888;">No price history available.</p>
+        }
+
+        <div style="text-align:center; margin-top:25px;">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary">← Back to Product List</a>
+        </div>
+    </div>
+</div>

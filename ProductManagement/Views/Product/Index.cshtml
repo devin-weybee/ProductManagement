@@ -1,0 +1,53 @@
+﻿@model IEnumerable<ProductResponse>
+@{
+    ViewBag.Title = "Product List";
+}
+
+<h2>Product List</h2>
+
+<div class="top-controls">
+    <a asp-controller="Product" asp-action="AddProduct" class="btn btn-success">+ Add Product</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Sr. No</th>
+            <th>Product Name</th>
+            <th>Latest Price</th>
+            <th style="text-align:center;">Price History</th>
+            <th style="text-align:center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int i = 1;
+            @foreach (var product in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@product.ProductName</td>
+                    <td>₹ @product.ProductRate.ToString("0.00")</td>
+                    <td style="text-align:center;">
+                        <a asp-controller="Product" asp-action="ViewRateHistory" asp-route-productId="@product.ProductID"
+                           class="btn btn-secondary">View</a>
+                    </td>
+                    <td style="text-align:center; font-weight:700">
+                        <a asp-controller="Product" asp-action="EditProduct" asp-route-productId="@product.ProductID"
+                           >Update</a> | 
+                        <a asp-controller="Product" asp-action="DeleteProduct" asp-route-productId="@product.ProductID" 
+                            style="color:#dc3545;">Delete</a>
+                    </td>
+                </tr>
+                i++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" style="text-align:center; color:#888;">No products found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

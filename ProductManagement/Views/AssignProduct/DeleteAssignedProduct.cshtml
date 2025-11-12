@@ -1,0 +1,33 @@
+﻿@model AssignedProductResponse
+@{
+    ViewBag.Title = "Unassign Product from Customer";
+}
+
+<div class="form-container">
+    <div class="form-box text-center">
+        <a asp-controller="AssignProduct" asp-action="Index">← Back to Assigned Products List</a>
+        <h2>Unassign Product from Customer</h2>
+        <h4 style="color:#555;">Are you sure you want to unassign this product from the customer?</h4>
+        <form asp-controller="AssignProduct" asp-action="DeleteAssignedProductConfirmed"
+              asp-route-assignedProductId="@Model.AssignedProductID" method="post">
+            <div class="form-group">
+                <label asp-for="AssignedProductID"></label>
+                <input asp-for=" AssignedProductID" value="@Model.AssignedProductID" disabled />
+            </div>
+            <div class="form-group">
+                <label asp-for="CustomerName"></label>
+                <input asp-for="CustomerName" value="@Model.CustomerName" disabled />
+
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ProductName"></label>
+                <input asp-for="ProductName" value="@Model.ProductName" disabled />
+            </div>
+
+            <button type="submit" class="btn btn-danger mt-10">Unassign Product</button>
+            <a asp-controller="AssignProduct" asp-action="Index" class="mt-10">Cancel</a>
+        </form>
+    </div>
+
+</div>
