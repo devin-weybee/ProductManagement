@@ -15,7 +15,6 @@ namespace ProductManagement.App.Services
         public CustomerService(ApplicationDBContext applicationDBContext)
         {
             _dbContext = applicationDBContext;
-            //_customerList = new List<Customer>();
         }
 
         public List<CustomerResponse> GetAllCustomers()
