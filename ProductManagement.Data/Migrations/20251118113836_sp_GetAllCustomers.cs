@@ -27,5 +27,6 @@ namespace ProductManagement.Data.Migrations
             ";
             migrationBuilder.Sql(sp_GetAllCustomer);
         }
+
     }
 }

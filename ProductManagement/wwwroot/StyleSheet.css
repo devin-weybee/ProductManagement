@@ -341,7 +341,7 @@ tr:last-child td {
 
     /* Input groups */
     .auth-box .form-group {
-        display: flex;
+/*        display: flex;*/
         flex-direction: column;
     }
 
