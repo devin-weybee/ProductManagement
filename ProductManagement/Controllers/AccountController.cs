@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductManagement.Data;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Models;
+using System;
 using System.Threading.Tasks;
 
 namespace ProductManagement.Controllers
@@ -12,11 +13,13 @@ namespace ProductManagement.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly JwtTokenHelper _jwtTokenHelper;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, JwtTokenHelper jwtTokenHelper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _jwtTokenHelper = jwtTokenHelper;
         }
 
         // Register Page
@@ -72,6 +75,30 @@ namespace ProductManagement.Controllers
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     var claims = await _userManager.GetClaimsAsync(user);
 
+                    var token = _jwtTokenHelper.GenerateAccessToken(user, claims);
+                    var refreshToken = RefreshTokenGenerator.GenerateRefreshToken();
+
+                    user.RefreshToken = refreshToken;
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(10);
+
+                    await _userManager.UpdateAsync(user);
+
+                    Response.Cookies.Append("token", token, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTime.UtcNow.AddMinutes(5)
+                    });
+
+                    Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTime.UtcNow.AddMinutes(10)
+                    });
+
                     if (!claims.Any(c => c.Type == "FullName"))
                     {
                         await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("FullName", user.FullName ?? ""));
@@ -86,13 +113,50 @@ namespace ProductManagement.Controllers
             return View(model);
         }
 
+
         // Logout
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+
+            Response.Cookies.Delete("token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+
             return RedirectToAction("Login", "Account");
         }
+
+        [HttpPost]
+        [Route("RefreshToken")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            if (!Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
+                return Unauthorized();
+
+            var user = _userManager.Users
+                .FirstOrDefault(u => u.RefreshToken == refreshToken);
+
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return Unauthorized();
+
+            var claims = await _userManager.GetClaimsAsync(user);
+            var newAccessToken = _jwtTokenHelper.GenerateAccessToken(user, claims);
+
+            Response.Cookies.Append("access_token", newAccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddMinutes(5)
+            });
+
+            return Ok();
+        }
+
     }
 }
