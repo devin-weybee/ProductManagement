@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using ProductManagement.App.Helper;
 using ProductManagement.Data;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Models;
@@ -45,6 +46,14 @@ namespace ProductManagement.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("FullName", user.FullName ?? ""));
+                    var claims = await _userManager.GetClaimsAsync(user);
+                    var token = _jwtTokenHelper.GenerateAccessToken(user, claims);
+                    var refreshToken = RefreshTokenGenerator.GenerateRefreshToken();
+
+                    user.RefreshToken = refreshToken;
+                    await _userManager.UpdateAsync(user);
+                    TokenCookieHelper.AppendTokens(HttpContext, token, refreshToken);
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
@@ -76,28 +85,10 @@ namespace ProductManagement.Controllers
                     var claims = await _userManager.GetClaimsAsync(user);
 
                     var token = _jwtTokenHelper.GenerateAccessToken(user, claims);
-                    var refreshToken = RefreshTokenGenerator.GenerateRefreshToken();
-
-                    user.RefreshToken = refreshToken;
-                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(10);
+                    var refreshToken = user.RefreshToken;
 
                     await _userManager.UpdateAsync(user);
-
-                    Response.Cookies.Append("token", token, new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTime.UtcNow.AddMinutes(5)
-                    });
-
-                    Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTime.UtcNow.AddMinutes(10)
-                    });
+                    TokenCookieHelper.AppendTokens(HttpContext, token, refreshToken);
 
                     if (!claims.Any(c => c.Type == "FullName"))
                     {
@@ -113,7 +104,6 @@ namespace ProductManagement.Controllers
             return View(model);
         }
 
-
         // Logout
         [HttpPost]
         [Route("[action]")]
@@ -121,41 +111,10 @@ namespace ProductManagement.Controllers
         {
             await _signInManager.SignOutAsync();
 
-            Response.Cookies.Delete("token", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict
-            });
+            Response.Cookies.Delete("token");
+            Response.Cookies.Delete("refreshToken");
 
             return RedirectToAction("Login", "Account");
-        }
-
-        [HttpPost]
-        [Route("RefreshToken")]
-        public async Task<IActionResult> RefreshToken()
-        {
-            if (!Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
-                return Unauthorized();
-
-            var user = _userManager.Users
-                .FirstOrDefault(u => u.RefreshToken == refreshToken);
-
-            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-                return Unauthorized();
-
-            var claims = await _userManager.GetClaimsAsync(user);
-            var newAccessToken = _jwtTokenHelper.GenerateAccessToken(user, claims);
-
-            Response.Cookies.Append("access_token", newAccessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(5)
-            });
-
-            return Ok();
         }
 
     }
