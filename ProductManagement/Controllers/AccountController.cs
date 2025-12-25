@@ -54,7 +54,6 @@ namespace ProductManagement.Controllers
                     await _userManager.UpdateAsync(user);
                     TokenCookieHelper.AppendTokens(HttpContext, token, refreshToken);
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -74,43 +73,49 @@ namespace ProductManagement.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-
-                if (result.Succeeded)
-                {
-                    // Ensure the FullName claim exists
-                    var user = await _userManager.FindByEmailAsync(model.Email);
-                    var claims = await _userManager.GetClaimsAsync(user);
-
-                    var token = _jwtTokenHelper.GenerateAccessToken(user, claims);
-                    var refreshToken = user.RefreshToken;
-
-                    await _userManager.UpdateAsync(user);
-                    TokenCookieHelper.AppendTokens(HttpContext, token, refreshToken);
-
-                    if (!claims.Any(c => c.Type == "FullName"))
-                    {
-                        await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("FullName", user.FullName ?? ""));
-                    }
-
-                    return RedirectToAction("Index", "Home");
-                }
-
                 ModelState.AddModelError("", "Invalid login attempt");
+                return View(model);
             }
 
-            return View(model);
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            if (!isPasswordValid)
+            {
+                ModelState.AddModelError("", "Invalid login attempt");
+                return View(model);
+            }
+
+            var claims = await _userManager.GetClaimsAsync(user);
+            if (!claims.Any(c => c.Type == "FullName"))
+            {
+                await _userManager.AddClaimAsync(
+                    user,
+                    new System.Security.Claims.Claim("FullName", user.FullName ?? "")
+                );
+
+                claims = await _userManager.GetClaimsAsync(user);
+            }
+
+            var token = _jwtTokenHelper.GenerateAccessToken(user, claims);
+            var refreshToken = user.RefreshToken;
+            await _userManager.UpdateAsync(user);
+
+            TokenCookieHelper.AppendTokens(HttpContext, token, refreshToken);
+
+            return RedirectToAction("Index", "Home");
         }
+
 
         // Logout
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-
             Response.Cookies.Delete("token");
             Response.Cookies.Delete("refreshToken");
 
