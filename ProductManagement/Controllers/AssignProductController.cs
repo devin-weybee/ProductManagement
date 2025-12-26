@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ProductManagement.App.DTO;
 using ProductManagement.App.Interfaces;
 
 namespace ProductManagement.Controllers
 {
+    [Authorize]
     public class AssignProductController : Controller
     {
         private readonly IProductService _productService;

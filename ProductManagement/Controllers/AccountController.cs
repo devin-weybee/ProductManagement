@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ProductManagement.App.Helper;
 using ProductManagement.Data;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace ProductManagement.Controllers
 {
+    [AllowAnonymous]
     [Route("[controller]")]
     public class AccountController : Controller
     {

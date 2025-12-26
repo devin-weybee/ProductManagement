@@ -10,7 +10,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter());
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -74,6 +77,17 @@ var app = builder.Build();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Cookies.ContainsKey("token") || !context.Request.Cookies.ContainsKey("refreshToken"))
+    {
+        context.Response.Cookies.Delete("token");
+        context.Response.Cookies.Delete("refreshToken");
+    }
+
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
