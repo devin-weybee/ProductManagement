@@ -7,21 +7,21 @@ namespace ProductManagement.App.Helper
     {
         public static void AppendTokens(HttpContext context, string accessToken, string refreshToken)
         {
-            context.Response.Cookies.Append("token", accessToken, new CookieOptions
+            context.Response.Cookies.Append("token", accessToken, CookieOptions());
+            context.Response.Cookies.Append("refreshToken", refreshToken, CookieOptions());
+        }
+
+        public static void AppendAccessToken(HttpContext context, string accessToken)
+        {
+            context.Response.Cookies.Append("token", accessToken, CookieOptions());
+        }
+
+        private static CookieOptions CookieOptions() =>
+            new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(2)
-            });
-
-            context.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(5)
-            });
-        }
+                SameSite = SameSiteMode.None
+            };
     }
 }

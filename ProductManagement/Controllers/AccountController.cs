@@ -6,6 +6,8 @@ using ProductManagement.Data;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Models;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ProductManagement.Controllers
@@ -124,5 +126,98 @@ namespace ProductManagement.Controllers
             return RedirectToAction("Login", "Account");
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+                return Unauthorized();
+
+            var user = _userManager.Users
+                .FirstOrDefault(u => u.RefreshToken == refreshToken);
+
+            if (user == null)
+                return Unauthorized();
+
+            var claims = await _userManager.GetClaimsAsync(user);
+            var newAccessToken = _jwtTokenHelper.GenerateAccessToken(user, claims);
+
+            TokenCookieHelper.AppendAccessToken(HttpContext, newAccessToken);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("google-login")]
+        public IActionResult GoogleLogin(string returnUrl = "/")
+        {
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(
+                "Google",
+                Url.Action("GoogleCallback", "Account", new { returnUrl })
+            );
+
+            return Challenge(properties, "Google");
+        }
+
+        [HttpGet]
+        [Route("google-callback")]
+        public async Task<IActionResult> GoogleCallback(string returnUrl = "/")
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+                return RedirectToAction("Login");
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+            if (email == null)
+                return RedirectToAction("Login");
+
+            // 1️⃣ Find or create user
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    FullName = name,
+                    EmailConfirmed = true
+                };
+
+                await _userManager.CreateAsync(user);
+                await _userManager.AddClaimAsync(user, new Claim("FullName", name ?? ""));
+            }
+
+            // 2️⃣ Link Google login if not linked
+            var logins = await _userManager.GetLoginsAsync(user);
+            if (!logins.Any(l => l.LoginProvider == info.LoginProvider))
+            {
+                await _userManager.AddLoginAsync(user, info);
+            }
+
+            // 3️⃣ Generate JWT + Refresh Token
+            var claims = await _userManager.GetClaimsAsync(user);
+            var accessToken = _jwtTokenHelper.GenerateAccessToken(user, claims);
+
+            if (string.IsNullOrEmpty(user.RefreshToken))
+            {
+                user.RefreshToken = RefreshTokenGenerator.GenerateRefreshToken();
+                await _userManager.UpdateAsync(user);
+            }
+
+            TokenCookieHelper.AppendTokens(HttpContext, accessToken, user.RefreshToken);
+
+            return RedirectToAction("LoginSuccess");
+            //return LocalRedirect(returnUrl);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult LoginSuccess()
+        {
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

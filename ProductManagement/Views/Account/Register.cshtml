@@ -35,7 +35,16 @@
             <button type="submit" class="auth-btn register">Register</button>
         </form>
 
-        <p>
+        <div class="divider">
+            <span>OR</span>
+        </div>
+
+        <a href="/Account/google-login" class="auth-btn google">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" />
+            Sign up with Google
+        </a>
+
+        <p class="switch-auth">
             Already have an account?
             <a asp-controller="Account" asp-action="Login">Login</a>
         </p>

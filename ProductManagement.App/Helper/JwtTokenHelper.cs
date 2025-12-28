@@ -14,6 +14,20 @@ public class JwtTokenHelper
         _config = config;
     }
 
+    // 🔓 Exposed validation parameters (single source of truth)
+    public TokenValidationParameters TokenValidationParameters =>
+        new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = _config["Jwt:Issuer"],
+            ValidAudience = _config["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]))
+        };
+
     public string GenerateAccessToken(ApplicationUser user, IList<Claim> userClaims)
     {
         var claims = new List<Claim>
@@ -40,10 +54,19 @@ public class JwtTokenHelper
             expires: DateTime.UtcNow.AddMinutes(
                 Convert.ToDouble(_config["Jwt:AccessTokenExpiryMinutes"])
             ),
-            signingCredentials: new SigningCredentials(
-                key, SecurityAlgorithms.HmacSha256)
+            signingCredentials: creds
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+    {
+        // 🔑 Clone parameters but allow expired tokens
+        var parameters = TokenValidationParameters.Clone();
+        parameters.ValidateLifetime = false;
+
+        var handler = new JwtSecurityTokenHandler();
+        return handler.ValidateToken(token, parameters, out _);
     }
 }

@@ -328,6 +328,12 @@ tr:last-child td {
     transition: transform 0.3s ease;
 }
 
+.google {
+    background: #fff;
+    color: #444;
+    border: 1px solid #ccc;
+}
+
     .auth-box:hover {
         transform: translateY(-3px);
     }
@@ -367,7 +373,6 @@ tr:last-child td {
 
 /* Buttons */
 .auth-btn {
-    width: 100%;
     padding: 10px;
     font-size: 16px;
     border: none;
@@ -392,6 +397,57 @@ tr:last-child td {
         .auth-btn.login:hover {
             background-color: #0069d9;
         }
+
+    .auth-btn.google {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background-color: #ffffff;
+        color: #444;
+        border: 1px solid #ddd;
+        font-weight: 500;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+        .auth-btn.google:hover {
+            background-color: #f7f7f7;
+            border-color: #ccc;
+        }
+
+        .auth-btn.google img {
+            width: 18px;
+            height: 18px;
+        }
+
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+    .divider span {
+        background: #fff;
+        padding: 0 10px;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #ddd;
+        z-index: -1;
+    }
+
 
 /* Links under form */
 .auth-box p {

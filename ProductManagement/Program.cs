@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using ProductManagement.App.Helper;
 using ProductManagement.App.Interfaces;
 using ProductManagement.App.Services;
 using ProductManagement.Data;
 using ProductManagement.Domain.Entities;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.Google;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +23,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ExternalScheme; // 🔑 REQUIRED
 })
 .AddJwtBearer(options =>
 {
@@ -49,8 +54,15 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+})
+.AddCookie(IdentityConstants.ExternalScheme) // 🔑 ADD THIS
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.CallbackPath = "/signin-google";
+    options.SaveTokens = true;
 });
-
 
 builder.Services.AddAuthorization();
 
@@ -71,7 +83,6 @@ builder.Services.AddIdentityCore<ApplicationUser>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-
 var app = builder.Build();
 
 app.UseStaticFiles();
@@ -80,7 +91,10 @@ app.UseRouting();
 
 app.Use(async (context, next) =>
 {
-    if (!context.Request.Cookies.ContainsKey("token") || !context.Request.Cookies.ContainsKey("refreshToken"))
+    var hasAccess = context.Request.Cookies.ContainsKey("token");
+    var hasRefresh = context.Request.Cookies.ContainsKey("refreshToken");
+
+    if (!hasAccess && !hasRefresh)
     {
         context.Response.Cookies.Delete("token");
         context.Response.Cookies.Delete("refreshToken");
@@ -89,10 +103,10 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.UseMiddleware<JwtSilentRefreshMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapDefaultControllerRoute();
 
 app.Run();
-
